@@ -98,7 +98,10 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Async\AsyncCommand.cs" />
+    <Compile Include="Async\AsyncCommandBase.cs" />
     <Compile Include="Async\IAsyncCommand.cs" />
+    <Compile Include="Async\NotifyTaskCompletion.cs" />
     <Compile Include="Common\ServiceInfo.cs" />
     <Compile Include="CompositionRoot.cs" />
     <Compile Include="Mappings\IMapper.cs" />
