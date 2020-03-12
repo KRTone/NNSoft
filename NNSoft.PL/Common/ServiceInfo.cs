@@ -10,7 +10,7 @@
 
         public int Id { get; set; }
 
-        public State State { get; set; }
+        public ServiceState State { get; set; }
 
         public string Path { get; set; }
     }

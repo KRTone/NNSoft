@@ -5,37 +5,65 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:NNSoft.PL.Views"
       xmlns:prism="http://prismlibrary.com/"
+      xmlns:converters="clr-namespace:NNSoft.PL.Converters"
       prism:ViewModelLocator.AutoWireViewModel="True"
       mc:Ignorable="d" >
-    <Grid>
-        <DataGrid ScrollViewer.CanContentScroll="True"
-                  ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                  ScrollViewer.VerticalScrollBarVisibility="Auto"
-                  IsReadOnly="True"
-                  AutoGenerateColumns="False"
-                  ItemsSource="{Binding Services}">
-            <DataGrid.Columns>
-                <DataGridTextColumn
+  <UserControl.Resources>
+    <converters:ButtonStatesConverter x:Key="btnStateConverter"/>
+    <Style x:Key="serviceMenuItem" TargetType="MenuItem">
+      <Style.Triggers>
+        <DataTrigger Binding="{Binding IsServiceManagerOperationExecuting, Converter={StaticResource btnStateConverter}}" Value="False">
+          <Setter Property="IsEnabled" Value="False"/>
+        </DataTrigger>
+      </Style.Triggers>
+    </Style>
+  </UserControl.Resources>
+  <Grid>
+    <DataGrid ScrollViewer.CanContentScroll="True"
+              ScrollViewer.HorizontalScrollBarVisibility="Auto"
+              ScrollViewer.VerticalScrollBarVisibility="Auto"
+              IsReadOnly="True"
+              AutoGenerateColumns="False"
+              ItemsSource="{Binding Services}"
+              SelectedItem="{Binding SelectedService}">
+      <DataGrid.Columns>
+        <DataGridTextColumn
                     Header="Имя"
                     Binding="{Binding Name}"
                     Width="*"/>
-                <DataGridTextColumn
+        <DataGridTextColumn
                     Header="ИД процесса"
-                    Binding="{Binding Pid}"
-                    Width="*"/>
-                <DataGridTextColumn
+                    Binding="{Binding Id}"
+                    Width="100"/>
+        <DataGridTextColumn
                     Header="Описание"
-                    Binding="{Binding DisplayName}"
+                    Binding="{Binding Description}"
                     Width="*"/>
-                <DataGridTextColumn
+        <DataGridTextColumn
                     Header="Состояние"
                     Binding="{Binding State}"
-                    Width="*"/>
-                <DataGridTextColumn
+                    Width="100"/>
+        <DataGridTextColumn
                     Header="Группа"
                     Binding="{Binding Group}"
                     Width="*"/>
-            </DataGrid.Columns>
-        </DataGrid>
-    </Grid>
+        <DataGridTextColumn
+                    Header="Путь"
+                    Binding="{Binding Path}"
+                    Width="4*"/>
+      </DataGrid.Columns>
+      <DataGrid.ContextMenu>
+        <ContextMenu>
+          <MenuItem Header="Start" Style="{StaticResource ResourceKey=serviceMenuItem}"/>
+          <!--<i:Interaction.Triggers>
+                <i:EventTrigger EventName="MouseDoubleClick">
+                    <i:InvokeCommandAction Command="{Binding ShowDetalizationCommand}" CommandParameter="{Binding ElementName=dataGrid, Path=SelectedItem}"/>
+                </i:EventTrigger>
+            </i:Interaction.Triggers>-->
+          <MenuItem Header="Stop" Style="{StaticResource ResourceKey=serviceMenuItem}"/>
+          <MenuItem Header="Reset" Style="{StaticResource ResourceKey=serviceMenuItem}"/>
+        </ContextMenu>
+      </DataGrid.ContextMenu>
+    </DataGrid>
+  </Grid>
 </UserControl>

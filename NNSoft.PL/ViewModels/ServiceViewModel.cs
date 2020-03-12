@@ -1,26 +1,43 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using NNSoft.PL.Mappings;
+using System.Windows.Input;
+using NNSoft.PL.Async;
+using NNSoft.PL.Common;
+using NNSoft.PL.Models;
 using Prism.Mvvm;
 
 namespace NNSoft.PL.ViewModels
 {
-    public class ServiceViewModel : BindableBase
+    class ServiceViewModel : BindableBase
     {
-        public ServiceViewModel(IMapper mapper, Api.IServiceOperations serviceOperations)
+        readonly ServiceManager serviceManager;
+        public ServiceViewModel(ServiceManager serviceManager)
         {
-            List<Api.ServiceInfo> services = new List<Api.ServiceInfo>();
-            serviceOperations.GetServices(out Api.ServiceInfo[] nativeServices);
+            this.serviceManager = serviceManager ?? throw new ArgumentNullException(nameof(serviceManager));
+            services = serviceManager.GetServices();
 
-            this.services = mapper.Map<ObservableCollection<Common.ServiceInfo>>(nativeServices);
+            Stop = new AsyncCommand<object>((token, param) => serviceManager.StopService(selectedService.Name));
+
+            IsServiceManagerOperationExecuting = true;
         }
 
-        ObservableCollection<Common.ServiceInfo> services = new ObservableCollection<Common.ServiceInfo>();
-        public ObservableCollection<Common.ServiceInfo> Services
+        ServiceInfo[] services;
+        public ServiceInfo[] Services
         {
             get { return services; }
             set { SetProperty(ref services, value); }
         }
+
+        ServiceInfo selectedService;
+        public ServiceInfo SelectedService
+        {
+            get { return selectedService; }
+            set { SetProperty(ref selectedService, value); }
+        }
+
+        ICommand Stop { get; }
+
+        public bool IsServiceManagerOperationExecuting { get; set; }
     }
 }

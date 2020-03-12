@@ -3,7 +3,7 @@
 namespace NNSoft.PL.Api
 {
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    public struct ServiceInfo
+    public struct NativeServiceInfo
     {
         public string Name;
 

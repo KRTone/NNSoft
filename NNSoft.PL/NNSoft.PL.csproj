@@ -91,9 +91,9 @@
     </ApplicationDefinition>
     <Compile Include="Api\ArrayMarshaler.cs" />
     <Compile Include="Api\ErrorCode.cs" />
-    <Compile Include="Api\IServiceOperations.cs" />
-    <Compile Include="Api\ServiceInfo.cs" />
-    <Compile Include="Api\ServiceOperations.cs" />
+    <Compile Include="Api\INativeServiceOperations.cs" />
+    <Compile Include="Api\NativeServiceInfo.cs" />
+    <Compile Include="Api\NativeServiceOperations.cs" />
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -103,10 +103,12 @@
     <Compile Include="Async\IAsyncCommand.cs" />
     <Compile Include="Async\NotifyTaskCompletion.cs" />
     <Compile Include="Common\ServiceInfo.cs" />
-    <Compile Include="Common\State.cs" />
+    <Compile Include="Common\ServiceState.cs" />
     <Compile Include="CompositionRoot.cs" />
+    <Compile Include="Converters\ButtonStatesConverter.cs" />
     <Compile Include="Mappings\IMapper.cs" />
     <Compile Include="Mappings\Mapper.cs" />
+    <Compile Include="Models\ServiceManager.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="ViewModels\ServiceViewModel.cs" />
     <Compile Include="Views\MainView.xaml.cs">
@@ -143,9 +145,7 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Models\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Page Include="Views\MainView.xaml">
       <SubType>Designer</SubType>

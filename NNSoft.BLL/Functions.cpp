@@ -152,7 +152,7 @@ HRESULT EnumerateServices(ServiceInfo* services)
         service.Id = lpServiceStatus[i].ServiceStatusProcess.dwProcessId;
         service.Name = _strdup(lpServiceStatus[i].lpServiceName);
         service.Path = Path;
-        service.State = lpServiceStatus->ServiceStatusProcess.dwCurrentState;
+        service.State = lpServiceStatus[i].ServiceStatusProcess.dwCurrentState;
         services[i] = service;
 
         if (result == S_FALSE)

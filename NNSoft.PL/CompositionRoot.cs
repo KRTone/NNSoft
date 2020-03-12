@@ -24,7 +24,7 @@ namespace NNSoft.PL
         {
             IUnityContainer container = containerRegistry.GetContainer();
             container.RegisterType<IMapper, Mapper>();
-            container.RegisterType<IServiceOperations, ServiceOperations>();
+            container.RegisterType<INativeServiceOperations, NativeServiceOperations>();
         }
     }
 }
