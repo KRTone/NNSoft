@@ -3,50 +3,174 @@
 #include <WTypes.h>
 #include <OAIdl.h>
 #include <atlsafe.h>
-#define SIZE_BUF 4096
+#include <iostream>
 using namespace std;
 
-
-extern "C" HRESULT GetServices(SAFEARRAY **ppsa)
+HRESULT LoadServiceInfo(LPSTR serviceName, LPSTR* servicePath, LPSTR* serviceGroup)
 {
-    SC_HANDLE handle = OpenSCManagerA(nullptr, nullptr, SC_MANAGER_ALL_ACCESS);
-    try
-    {
-        ENUM_SERVICE_STATUS Status[SIZE_BUF];
-        DWORD size = sizeof(Status);
-        DWORD needed = 0;
-        DWORD count = 0;
-        DWORD resumeHandle = 0;
-        if (EnumServicesStatusA(
-            handle,
-            SERVICE_WIN32,
-            SERVICE_STATE_ALL,
-            (LPENUM_SERVICE_STATUSA)&Status,
-            size,
-            &needed,
-            &count,
-            &resumeHandle))
-        {
-            CComSafeArray<BSTR> sa(count);
+    DWORD bytesNeeded;
+    SC_HANDLE manager = OpenSCManagerA(NULL, NULL, SC_MANAGER_ALL_ACCESS);
 
-            for (unsigned int indx = 0; indx < count; indx++)
-            {
-                CComBSTR bstr = Status[indx].lpServiceName;
-                HRESULT hr = sa.SetAt(indx, bstr.Detach(), FALSE);
-                if (FAILED(hr))
-                    return hr;
-            }
-            *ppsa = sa.Detach();
-        }
-        CloseServiceHandle(handle);
+    if (manager == INVALID_HANDLE_VALUE)
+    {
         return S_FALSE;
     }
-    catch (const CAtlException & e)
+
+    SC_HANDLE service = OpenServiceA(manager, serviceName, SERVICE_QUERY_CONFIG);
+
+    if (service == INVALID_HANDLE_VALUE)
     {
-        CloseServiceHandle(handle);
-        return e;
+        return S_FALSE;
     }
-    CloseServiceHandle(handle);
+
+    QueryServiceConfigA(
+        service,
+        NULL,
+        0,
+        &bytesNeeded);
+
+    LPQUERY_SERVICE_CONFIG lpsc = (LPQUERY_SERVICE_CONFIG)malloc(bytesNeeded * sizeof * lpsc);
+
+    QueryServiceConfigA(
+        service,
+        lpsc,
+        bytesNeeded,
+        &bytesNeeded
+    );
+    *servicePath = _strdup(lpsc->lpBinaryPathName);
+    *serviceGroup = _strdup(lpsc->lpLoadOrderGroup);//lpsc->lpLoadOrderGroup;
+
+    free(lpsc);
+    CloseServiceHandle(manager);
+    CloseServiceHandle(service);
     return S_OK;
 }
 
+int GetServiceCount() 
+{
+    SC_HANDLE manager = OpenSCManagerA(NULL, NULL, SC_MANAGER_ALL_ACCESS);
+
+    if (manager == INVALID_HANDLE_VALUE)
+    {
+        return S_FALSE;
+    }
+
+    DWORD bytesNeeded;
+    DWORD servicesCount;
+
+    BOOL status = EnumServicesStatusExA(
+        manager,
+        SC_ENUM_PROCESS_INFO,
+        SERVICE_WIN32,
+        SERVICE_STATE_ALL,
+        NULL,
+        0,
+        &bytesNeeded,
+        &servicesCount,
+        NULL,
+        NULL
+    );
+
+    PBYTE lpBytes = (PBYTE)malloc(bytesNeeded * sizeof lpBytes);
+
+    status = EnumServicesStatusExA(
+        manager,
+        SC_ENUM_PROCESS_INFO,
+        SERVICE_WIN32,
+        SERVICE_STATE_ALL,
+        lpBytes,
+        bytesNeeded,
+        &bytesNeeded,
+        &servicesCount,
+        NULL,
+        NULL
+    );
+
+    free(lpBytes);
+    CloseServiceHandle(manager);
+    return servicesCount;
+}
+
+HRESULT EnumerateServices(ServiceInfo* services)
+{
+    SC_HANDLE manager = OpenSCManagerA(NULL, NULL, SC_MANAGER_ALL_ACCESS);
+
+    if (manager == INVALID_HANDLE_VALUE) 
+    {
+        return S_FALSE;
+    }
+
+    DWORD bytesNeeded;
+    DWORD servicesCount;
+
+    BOOL status = EnumServicesStatusExA(
+        manager,
+        SC_ENUM_PROCESS_INFO,
+        SERVICE_WIN32,
+        SERVICE_STATE_ALL,
+        NULL,
+        0,
+        &bytesNeeded,
+        &servicesCount,
+        NULL,
+        NULL
+    );
+
+    PBYTE lpServiceBytes = (PBYTE)malloc(bytesNeeded);
+
+    status = EnumServicesStatusExA(
+        manager,
+        SC_ENUM_PROCESS_INFO,
+        SERVICE_WIN32,
+        SERVICE_STATE_ALL,
+        lpServiceBytes,
+        bytesNeeded,
+        &bytesNeeded,
+        &servicesCount,
+        NULL,
+        NULL
+    );
+
+    if (status == false)
+    {
+        return S_FALSE;
+    }
+
+    LPENUM_SERVICE_STATUS_PROCESS lpServiceStatus = (LPENUM_SERVICE_STATUS_PROCESS)lpServiceBytes;
+
+    cout << "Services loaded" << endl;
+
+    for (DWORD i = 0; i < servicesCount; i++) {
+        LPSTR groupName = nullptr;
+        LPSTR Path = nullptr;
+
+        HRESULT result = LoadServiceInfo(lpServiceStatus[i].lpServiceName, &Path, &groupName);
+
+        ServiceInfo service;
+        service.Description = _strdup(lpServiceStatus[i].lpDisplayName);
+        service.Group = groupName;
+        service.Id = lpServiceStatus[i].ServiceStatusProcess.dwProcessId;
+        service.Name = _strdup(lpServiceStatus[i].lpServiceName);
+        service.Path = Path;
+        service.State = lpServiceStatus->ServiceStatusProcess.dwCurrentState;
+        services[i] = service;
+
+        if (result == S_FALSE)
+            return S_FALSE;
+    }
+
+    cout << "Extension Service data is loaded" << endl;
+
+    free(lpServiceBytes);
+    CloseServiceHandle(manager);
+    return S_OK;
+}
+
+extern "C" HRESULT GetServices(ServiceInfo* services)
+{
+    cout << "Start Enumerate Services" << endl;
+    HRESULT result = EnumerateServices(services);
+    cout << "End Enumerate Services" << endl;
+    cout << "Exit From calling method" << endl;
+    return result;
+}

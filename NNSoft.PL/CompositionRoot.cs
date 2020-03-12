@@ -1,4 +1,5 @@
-﻿using NNSoft.PL.Mappings;
+﻿using NNSoft.PL.Api;
+using NNSoft.PL.Mappings;
 using NNSoft.PL.Views;
 using Prism.Ioc;
 using Prism.Modularity;
@@ -23,6 +24,7 @@ namespace NNSoft.PL
         {
             IUnityContainer container = containerRegistry.GetContainer();
             container.RegisterType<IMapper, Mapper>();
+            container.RegisterType<IServiceOperations, ServiceOperations>();
         }
     }
 }

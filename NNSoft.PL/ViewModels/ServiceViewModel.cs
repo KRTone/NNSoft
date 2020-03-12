@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using NNSoft.PL.Mappings;
 using Prism.Mvvm;
 
@@ -7,28 +8,12 @@ namespace NNSoft.PL.ViewModels
 {
     public class ServiceViewModel : BindableBase
     {
-        public ServiceViewModel(IMapper mapper)
+        public ServiceViewModel(IMapper mapper, Api.IServiceOperations serviceOperations)
         {
             List<Api.ServiceInfo> services = new List<Api.ServiceInfo>();
+            serviceOperations.GetServices(out Api.ServiceInfo[] nativeServices);
 
-            services.Add(new Api.ServiceInfo
-            {
-                DisplayName = nameof(Api.ServiceInfo.DisplayName),
-                Group = nameof(Api.ServiceInfo.Group),
-                Name = nameof(Api.ServiceInfo.Name),
-                Pid = 1,
-                State = 1,
-            });
-            services.Add(new Api.ServiceInfo
-            {
-                DisplayName = nameof(Api.ServiceInfo.DisplayName),
-                Group = nameof(Api.ServiceInfo.Group),
-                Name = nameof(Api.ServiceInfo.Name),
-                Pid = 2,
-                State = 2,
-            });
-
-            this.services = mapper.Map<ObservableCollection<Common.ServiceInfo>>(services);
+            this.services = mapper.Map<ObservableCollection<Common.ServiceInfo>>(nativeServices);
         }
 
         ObservableCollection<Common.ServiceInfo> services = new ObservableCollection<Common.ServiceInfo>();

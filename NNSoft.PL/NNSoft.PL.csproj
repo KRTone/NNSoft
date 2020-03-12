@@ -89,11 +89,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Api\ArrayMarshaler.cs" />
     <Compile Include="Api\ErrorCode.cs" />
     <Compile Include="Api\IServiceOperations.cs" />
     <Compile Include="Api\ServiceInfo.cs" />
     <Compile Include="Api\ServiceOperations.cs" />
-    <Compile Include="Api\State.cs" />
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -103,6 +103,7 @@
     <Compile Include="Async\IAsyncCommand.cs" />
     <Compile Include="Async\NotifyTaskCompletion.cs" />
     <Compile Include="Common\ServiceInfo.cs" />
+    <Compile Include="Common\State.cs" />
     <Compile Include="CompositionRoot.cs" />
     <Compile Include="Mappings\IMapper.cs" />
     <Compile Include="Mappings\Mapper.cs" />

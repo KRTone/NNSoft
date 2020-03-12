@@ -2,15 +2,19 @@
 
 namespace NNSoft.PL.Api
 {
-    public class ServiceInfo
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
+    public struct ServiceInfo
     {
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 100)]
         public string Name;
-        public int Pid;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 100)]
-        public string DisplayName;
-        public int State;
+
+        public string Description;
+
         public string Group;
+
+        public int Id;
+
+        public int State;
+
         public string Path;
     }
 }

@@ -2,7 +2,7 @@
 {
     public enum ErrorCode
     {
-        False = 0,
-        Ok = 1
+        Ok = 0,
+        False = 1,
     }
 }
