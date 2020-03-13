@@ -5,11 +5,11 @@ using System.Windows.Data;
 
 namespace NNSoft.PL.Converters
 {
-    class ButtonStatesConverter : IValueConverter
+    public class ButtonStatesConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return (bool)value;
+            return true;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

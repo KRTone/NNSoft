@@ -6,26 +6,19 @@
       xmlns:local="clr-namespace:NNSoft.PL.Views"
       xmlns:prism="http://prismlibrary.com/"
       xmlns:converters="clr-namespace:NNSoft.PL.Converters"
+      xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
       prism:ViewModelLocator.AutoWireViewModel="True"
       mc:Ignorable="d" >
-  <UserControl.Resources>
-    <converters:ButtonStatesConverter x:Key="btnStateConverter"/>
-    <Style x:Key="serviceMenuItem" TargetType="MenuItem">
-      <Style.Triggers>
-        <DataTrigger Binding="{Binding IsServiceManagerOperationExecuting, Converter={StaticResource btnStateConverter}}" Value="False">
-          <Setter Property="IsEnabled" Value="False"/>
-        </DataTrigger>
-      </Style.Triggers>
-    </Style>
-  </UserControl.Resources>
   <Grid>
     <DataGrid ScrollViewer.CanContentScroll="True"
               ScrollViewer.HorizontalScrollBarVisibility="Auto"
               ScrollViewer.VerticalScrollBarVisibility="Auto"
               IsReadOnly="True"
+              SelectionMode="Single"
               AutoGenerateColumns="False"
+              x:Name="dataGrid"
               ItemsSource="{Binding Services}"
-              SelectedItem="{Binding SelectedService}">
+              RowStyle="{DynamicResource serviceOperations}">
       <DataGrid.Columns>
         <DataGridTextColumn
                     Header="Имя"
@@ -52,18 +45,6 @@
                     Binding="{Binding Path}"
                     Width="4*"/>
       </DataGrid.Columns>
-      <DataGrid.ContextMenu>
-        <ContextMenu>
-          <MenuItem Header="Start" Style="{StaticResource ResourceKey=serviceMenuItem}"/>
-          <!--<i:Interaction.Triggers>
-                <i:EventTrigger EventName="MouseDoubleClick">
-                    <i:InvokeCommandAction Command="{Binding ShowDetalizationCommand}" CommandParameter="{Binding ElementName=dataGrid, Path=SelectedItem}"/>
-                </i:EventTrigger>
-            </i:Interaction.Triggers>-->
-          <MenuItem Header="Stop" Style="{StaticResource ResourceKey=serviceMenuItem}"/>
-          <MenuItem Header="Reset" Style="{StaticResource ResourceKey=serviceMenuItem}"/>
-        </ContextMenu>
-      </DataGrid.ContextMenu>
     </DataGrid>
   </Grid>
 </UserControl>

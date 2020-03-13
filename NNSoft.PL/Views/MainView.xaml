@@ -7,6 +7,13 @@
         xmlns:prism="http://prismlibrary.com/"
         mc:Ignorable="d"
         Title="MainView" Height="450" Width="800">
+  <Window.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="..\ResourceDictionaries\ContextMenuResource.xaml"/>
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </Window.Resources>
     <Grid>
         <TabControl>
             <TabItem Header="Службы">

@@ -102,10 +102,14 @@
     <Compile Include="Async\AsyncCommandBase.cs" />
     <Compile Include="Async\IAsyncCommand.cs" />
     <Compile Include="Async\NotifyTaskCompletion.cs" />
+    <Compile Include="Common\Exceptions\ExceptionMessageManager.cs" />
+    <Compile Include="Common\Exceptions\NativeException.cs" />
     <Compile Include="Common\ServiceInfo.cs" />
     <Compile Include="Common\ServiceState.cs" />
     <Compile Include="CompositionRoot.cs" />
     <Compile Include="Converters\ButtonStatesConverter.cs" />
+    <Compile Include="Converters\ConverterBindableParameter.cs" />
+    <Compile Include="Converters\MultiValueConverter.cs" />
     <Compile Include="Mappings\IMapper.cs" />
     <Compile Include="Mappings\Mapper.cs" />
     <Compile Include="Models\ServiceManager.cs" />
@@ -147,6 +151,10 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
+    <Page Include="ResourceDictionaries\ContextMenuResource.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\MainView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

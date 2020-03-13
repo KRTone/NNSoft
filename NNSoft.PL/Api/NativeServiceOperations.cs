@@ -7,17 +7,16 @@ namespace NNSoft.PL.Api
     {
         [DllImport(@"NNSoft.BLL.dll", EntryPoint = "GetServices", CallingConvention = CallingConvention.Cdecl)]
         static extern int _GetServices(
-            [In, Out, MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(ArrayMarshaler<NativeServiceInfo>), IidParameterIndex = 0)] 
-            NativeServiceInfo[] serviceInfo);
+            [In, Out, MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(ArrayMarshaler<NativeServiceInfo>), IidParameterIndex = 0)] NativeServiceInfo[] serviceInfo);
 
         [DllImport(@"NNSoft.BLL.dll", EntryPoint = "GetServiceCount", CallingConvention = CallingConvention.Cdecl)]
         static extern int _GetServiceCount();
 
         [DllImport(@"NNSoft.BLL.dll", EntryPoint = "StartServices", CallingConvention = CallingConvention.Cdecl)]
-        static extern int _StartServices(ref NativeServiceInfo[] serviceInfo);
+        static extern int _StartServices([In, Out] NativeServiceInfo serviceInfo);
 
         [DllImport(@"NNSoft.BLL.dll", EntryPoint = "StopServices", CallingConvention = CallingConvention.Cdecl)]
-        static extern int _StopServices(ref NativeServiceInfo[] serviceInfo);
+        static extern int _StopServices([In, Out] NativeServiceInfo serviceInfo);
 
         public ErrorCode GetServices(out NativeServiceInfo[] serviceInfoes)
         {
@@ -26,8 +25,8 @@ namespace NNSoft.PL.Api
             return (ErrorCode)_GetServices(serviceInfoes);
         }
 
-        public ErrorCode StartServices(ref NativeServiceInfo[] serviceInfo) => (ErrorCode)_StartServices(ref serviceInfo);
+        public ErrorCode StartServices(NativeServiceInfo serviceInfo) => (ErrorCode)_StartServices(serviceInfo);
 
-        public ErrorCode StopServices(ref NativeServiceInfo[] serviceInfo) => (ErrorCode)_StopServices(ref serviceInfo);
+        public ErrorCode StopServices(NativeServiceInfo serviceInfo) => (ErrorCode)_StopServices(serviceInfo);
     }
 }

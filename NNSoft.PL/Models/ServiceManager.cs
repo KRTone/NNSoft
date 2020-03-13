@@ -1,5 +1,6 @@
 ﻿using NNSoft.PL.Api;
 using NNSoft.PL.Common;
+using NNSoft.PL.Common.Exceptions;
 using NNSoft.PL.Mappings;
 using System;
 using System.Threading.Tasks;
@@ -27,6 +28,15 @@ namespace NNSoft.PL.Models
         public async Task<object> StopService(string serviceName)
         {
             return Task.FromResult<object>(null);
+        }
+
+        void ThrowIfError(ErrorCode errorCode)
+        {
+            switch (errorCode)
+            {
+                case ErrorCode.False:
+                    throw new NativeException(ExceptionMessageManager.BuildException((int)errorCode), (int)errorCode);
+            }
         }
     }
 }

@@ -174,3 +174,54 @@ extern "C" HRESULT GetServices(ServiceInfo* services)
     cout << "Exit From calling method" << endl;
     return result;
 }
+
+HRESULT SetServiceState(LPCSTR serviceName, DWORD operation) 
+{
+    BOOL result;
+    SC_HANDLE manager = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
+    SC_HANDLE service = OpenServiceA(manager, serviceName, SC_MANAGER_ALL_ACCESS);
+
+    SERVICE_STATUS_PROCESS serviceStatus;
+    DWORD bytesNeeded;
+    QueryServiceStatusEx(service, SC_STATUS_PROCESS_INFO, (LPBYTE)&serviceStatus, sizeof SERVICE_STATUS_PROCESS, &bytesNeeded);
+
+    if (serviceStatus.dwCurrentState != operation)
+    {
+        if (ControlService(manager, operation, (LPSERVICE_STATUS)&serviceStatus))
+        {
+            cout << "Status changed successully" << endl;
+            result = true;
+        }
+        else
+        {
+            cout << "Status has not changed" << endl;
+            result = false;
+        }
+    }
+
+    CloseServiceHandle(service);
+    CloseServiceHandle(manager);
+    return result ? S_OK : S_FALSE;
+}
+
+extern "C" HRESULT StopService(ServiceInfo service)
+{
+    cout << "StartService" << endl;
+    return SetServiceState(service.Name, SERVICE_CONTROL_STOP);
+}
+
+HRESULT StartService(LPCSTR serviceName)
+{
+    SC_HANDLE manager = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
+    SC_HANDLE service = OpenServiceA(manager, serviceName, SC_MANAGER_ALL_ACCESS);
+    BOOL result = StartServiceA(service, NULL, NULL);
+    result ? cout << "Service started" : cout << "Something went wrong. Service has not started";
+    cout << endl;
+    return result ? S_OK : S_FALSE;
+}
+
+extern "C" HRESULT StartService(ServiceInfo service)
+{
+    cout << "StartService" << endl;
+    return StartService(service.Name);
+}
