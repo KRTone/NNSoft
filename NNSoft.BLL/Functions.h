@@ -8,15 +8,15 @@ using namespace std;
 
 typedef struct _ServiceInfo
 {
-    char* Name;
-    char* Description;
-    char* Group;
-    int Id;
-    int State;
-    char* Path;
+    char* name;
+    char* description;
+    char* group;
+    int id;
+    int state;
+    char* path;
 } ServiceInfo, *LPServiceInfo;
 
-extern "C" __declspec(dllexport) HRESULT GetServices(ServiceInfo* services);
-extern "C" __declspec(dllexport) HRESULT StopService(ServiceInfo service);
-extern "C" __declspec(dllexport) int GetServiceCount();
-extern "C" __declspec(dllexport) HRESULT StartService(ServiceInfo service);
+extern "C" __declspec(dllexport) HRESULT _GetServices(ServiceInfo* services);
+extern "C" __declspec(dllexport) HRESULT _StopService(ServiceInfo* service);
+extern "C" __declspec(dllexport) int _GetServiceCount();
+extern "C" __declspec(dllexport) HRESULT _StartService(ServiceInfo* service);

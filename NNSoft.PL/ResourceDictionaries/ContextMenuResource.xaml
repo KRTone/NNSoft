@@ -1,42 +1,34 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:local="clr-namespace:NNSoft.PL.ResourceDictionaries"
+                    xmlns:common="clr-namespace:NNSoft.PL.Common"
                     xmlns:converters="clr-namespace:NNSoft.PL.Converters">
 
-  <converters:ButtonStatesConverter x:Key="btnStateConverter"/>
-
-  <Style x:Key="BoundIsEnabledOnServiceState" TargetType="MenuItem">
-    <Setter Property="IsEnabled">
+    <converters:ButtonStatesConverter x:Key="btnStateConverter"/>
+    
+    <Style x:Key="serviceOperations" TargetType="{x:Type DataGridRow}">
+    <Setter Property="Tag" Value="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type DataGrid}}}" />
+    <Setter Property="ContextMenu">
       <Setter.Value>
-        <converters:ConverterBindableParameter
-                Binding="{Binding RelativeSource={RelativeSource Mode=Self}}"
-                Converter="{StaticResource btnStateConverter}"
-                ConverterParameterBinding="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=UserControl}, Path=SelectedService}" />
+        <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource AncestorType={x:Type DataGridRow}}}">
+          <MenuItem Header="Запустить" 
+                    Command="{Binding DataContext.StartServiceCommand}" 
+                    DataContext="{Binding Parent.PlacementTarget.Tag , RelativeSource={RelativeSource Self}}"
+                    IsEnabled="{Binding SelectedItem, Converter={StaticResource btnStateConverter}, ConverterParameter={x:Static common:ServiceState.Running}}"
+                    CommandParameter="{Binding SelectedItem}"/>
+          <MenuItem Header="Остановить" 
+                    Command="{Binding DataContext.StopServiceCommand}" 
+                    DataContext="{Binding Parent.PlacementTarget.Tag , RelativeSource={RelativeSource Self}}"
+                    CommandParameter="{Binding SelectedItem}"
+                    IsEnabled="{Binding SelectedItem, Converter={StaticResource btnStateConverter}, ConverterParameter={x:Static common:ServiceState.Stopped}}"/>
+          <MenuItem Header="Перезапустить" 
+                    Command="{Binding DataContext.RestartServiceCommand}" 
+                    DataContext="{Binding Parent.PlacementTarget.Tag , RelativeSource={RelativeSource Self}}"
+                    CommandParameter="{Binding SelectedItem}"
+                    IsEnabled="{Binding SelectedItem, Converter={StaticResource btnStateConverter}, ConverterParameter={x:Static common:ServiceState.Stopped}}"/>
+        </ContextMenu>
       </Setter.Value>
     </Setter>
-  </Style>
-  
-  <ContextMenu x:Key="ServiceRowMenu"
-               AllowDrop="True">
-    <MenuItem Tag="Start" 
-              Style="{StaticResource BoundIsEnabledOnServiceState}" 
-              Header="Запустить" 
-              Command="{Binding StartServiceCommand}" 
-              CommandParameter="{Binding ElementName=dataGrid, Path=SelectedService}"/>
-    <MenuItem Tag="Stop" 
-              Header="Остановить" 
-              Style="{StaticResource BoundIsEnabledOnServiceState}" 
-              Command="{Binding StopServiceCommand}" 
-              CommandParameter="{Binding ElementName=dataGrid, Path=SelectedService}"/>
-    <MenuItem Tag="Restart"
-              Style="{StaticResource BoundIsEnabledOnServiceState}" 
-              Header="Перезапустить" 
-              Command="{Binding RetartServiceCommand}" 
-              CommandParameter="{Binding ElementName=dataGrid, Path=SelectedService}"/>
-  </ContextMenu>
-
-  <Style x:Key="serviceOperations" TargetType="{x:Type DataGridRow}">
-    <Setter Property="ContextMenu" Value="{StaticResource ResourceKey=ServiceRowMenu}"/>
   </Style>
 
 </ResourceDictionary>

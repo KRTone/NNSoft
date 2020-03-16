@@ -9,7 +9,7 @@ namespace NNSoft.PL.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return true;
+            return (value as ServiceInfo)?.State != (ServiceState)parameter;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

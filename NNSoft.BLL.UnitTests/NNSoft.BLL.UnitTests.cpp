@@ -11,17 +11,35 @@ namespace NNSoftBLLUnitTests
 	public:
 		TEST_METHOD(Functions_GetServices_OK)
 		{
-			LPServiceInfo services = (LPServiceInfo)malloc(GetServiceCount() * sizeof *services);
-			HRESULT result = GetServices(services);
+			LPServiceInfo services = (LPServiceInfo)malloc(_GetServiceCount() * sizeof *services);
+			HRESULT result = _GetServices(services);
 			Assert::AreEqual(result, S_OK);
 			free(services);
 		}
 
 		TEST_METHOD(Functions_GetServiceCount_OK)
 		{
-			int count = GetServiceCount();
+			int count = _GetServiceCount();
 
 			Assert::AreNotEqual(count, 0);
+		}
+
+		TEST_METHOD(Functions_StopService_OK)
+		{
+			LPServiceInfo services = new ServiceInfo();
+			services->name = "AdobeARMService";
+			HRESULT result = _StopService(services);
+			Assert::AreEqual(result, S_OK);
+			free(services);
+		}
+
+		TEST_METHOD(Functions_StartService_OK)
+		{
+			LPServiceInfo services = new ServiceInfo();
+			services->name = "AdobeARMService";
+			HRESULT result = _StartService(services);
+			Assert::AreEqual(result, S_OK);
+			free(services);
 		}
 	};
 }

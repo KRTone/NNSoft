@@ -5,28 +5,39 @@ namespace NNSoft.PL.Api
 {
     class NativeServiceOperations : INativeServiceOperations
     {
-        [DllImport(@"NNSoft.BLL.dll", EntryPoint = "GetServices", CallingConvention = CallingConvention.Cdecl)]
+#if RELEASE
+        const string assemblyLocation = @"\Assemblies\NNSoft.BLL.dll";
+#elif DEBUG
+        const string assemblyLocation = "NNSoft.BLL.dll";
+#endif
+
+        [DllImport(assemblyLocation, EntryPoint = "_GetServices", CallingConvention = CallingConvention.Cdecl)]
         static extern int _GetServices(
             [In, Out, MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(ArrayMarshaler<NativeServiceInfo>), IidParameterIndex = 0)] NativeServiceInfo[] serviceInfo);
 
-        [DllImport(@"NNSoft.BLL.dll", EntryPoint = "GetServiceCount", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport(assemblyLocation, EntryPoint = "_GetServiceCount", CallingConvention = CallingConvention.Cdecl)]
         static extern int _GetServiceCount();
 
-        [DllImport(@"NNSoft.BLL.dll", EntryPoint = "StartServices", CallingConvention = CallingConvention.Cdecl)]
-        static extern int _StartServices([In, Out] NativeServiceInfo serviceInfo);
+        [DllImport(assemblyLocation, EntryPoint = "_StartService", CallingConvention = CallingConvention.Cdecl)]
+        static extern int _StartService([In, Out] NativeServiceInfo serviceInfo);
 
-        [DllImport(@"NNSoft.BLL.dll", EntryPoint = "StopServices", CallingConvention = CallingConvention.Cdecl)]
-        static extern int _StopServices([In, Out] NativeServiceInfo serviceInfo);
+        [DllImport(assemblyLocation, EntryPoint = "_StopService", CallingConvention = CallingConvention.Cdecl)]
+        static extern int _StopServices([In, Out]NativeServiceInfo serviceInfo);
 
         public ErrorCode GetServices(out NativeServiceInfo[] serviceInfoes)
         {
             int count = _GetServiceCount();
             serviceInfoes = new NativeServiceInfo[count];
+            for (int i = 0; i < serviceInfoes.Length; i++)
+            {
+                if (serviceInfoes[i] is null)
+                    serviceInfoes[i] = new NativeServiceInfo();
+            }
             return (ErrorCode)_GetServices(serviceInfoes);
         }
 
-        public ErrorCode StartServices(NativeServiceInfo serviceInfo) => (ErrorCode)_StartServices(serviceInfo);
+        public ErrorCode StartService(NativeServiceInfo serviceInfo) => (ErrorCode)_StartService(serviceInfo);
 
-        public ErrorCode StopServices(NativeServiceInfo serviceInfo) => (ErrorCode)_StopServices(serviceInfo);
+        public ErrorCode StopService(NativeServiceInfo serviceInfo) => (ErrorCode)_StopServices(serviceInfo);
     }
 }

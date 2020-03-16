@@ -10,7 +10,7 @@ namespace NNSoft.PL.Mappings
             cfg.CreateMap<NativeServiceInfo, ServiceInfo>()
             .ForMember(
                 dest => dest.State,
-                opt => opt.MapFrom(src => (Common.ServiceState)src.State))
+                opt => opt.MapFrom(src => (Common.ServiceState)src.state))
             .ReverseMap();
         }).CreateMapper();
 

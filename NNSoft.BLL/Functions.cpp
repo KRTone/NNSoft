@@ -4,7 +4,11 @@
 #include <OAIdl.h>
 #include <atlsafe.h>
 #include <iostream>
+#include <comdef.h>
+#include <thread>
+#include <stdlib.h>
 using namespace std;
+
 
 HRESULT LoadServiceInfo(LPSTR serviceName, LPSTR* servicePath, LPSTR* serviceGroup)
 {
@@ -46,7 +50,7 @@ HRESULT LoadServiceInfo(LPSTR serviceName, LPSTR* servicePath, LPSTR* serviceGro
     return S_OK;
 }
 
-int GetServiceCount() 
+int _GetServiceCount() 
 {
     SC_HANDLE manager = OpenSCManagerA(NULL, NULL, SC_MANAGER_ALL_ACCESS);
 
@@ -147,12 +151,12 @@ HRESULT EnumerateServices(ServiceInfo* services)
         HRESULT result = LoadServiceInfo(lpServiceStatus[i].lpServiceName, &Path, &groupName);
 
         ServiceInfo service;
-        service.Description = _strdup(lpServiceStatus[i].lpDisplayName);
-        service.Group = groupName;
-        service.Id = lpServiceStatus[i].ServiceStatusProcess.dwProcessId;
-        service.Name = _strdup(lpServiceStatus[i].lpServiceName);
-        service.Path = Path;
-        service.State = lpServiceStatus[i].ServiceStatusProcess.dwCurrentState;
+        service.description = _strdup(lpServiceStatus[i].lpDisplayName);
+        service.group = groupName;
+        service.id = lpServiceStatus[i].ServiceStatusProcess.dwProcessId;
+        service.name = _strdup(lpServiceStatus[i].lpServiceName);
+        service.path = Path;
+        service.state = lpServiceStatus[i].ServiceStatusProcess.dwCurrentState;
         services[i] = service;
 
         if (result == S_FALSE)
@@ -166,7 +170,7 @@ HRESULT EnumerateServices(ServiceInfo* services)
     return S_OK;
 }
 
-extern "C" HRESULT GetServices(ServiceInfo* services)
+extern "C" HRESULT _GetServices(ServiceInfo* services)
 {
     cout << "Start Enumerate Services" << endl;
     HRESULT result = EnumerateServices(services);
@@ -175,11 +179,32 @@ extern "C" HRESULT GetServices(ServiceInfo* services)
     return result;
 }
 
-HRESULT SetServiceState(LPCSTR serviceName, DWORD operation) 
+void GetServiceStatus(ServiceInfo* serviceInfo, SC_HANDLE hdService)
+{
+    SERVICE_STATUS_PROCESS serviceStatus;
+    DWORD bytesNeeded;
+    QueryServiceStatusEx(hdService, SC_STATUS_PROCESS_INFO, (LPBYTE)&serviceStatus, sizeof SERVICE_STATUS_PROCESS, &bytesNeeded);
+
+    serviceInfo->id = serviceStatus.dwProcessId;
+    serviceInfo->state = serviceStatus.dwCurrentState;
+}
+
+void WaitWhileStatus(ServiceInfo* serviceInfo, SC_HANDLE service, DWORD status) {
+    int count = 1;
+    do
+    {
+        count++;
+        std::this_thread::sleep_for(1s);
+        GetServiceStatus(serviceInfo, service);
+        std::cout << "Checking Service Status...\n";
+    } while (serviceInfo->state != status || count == 5);
+}
+
+HRESULT SetServiceState(ServiceInfo* serviceInfo, DWORD operation) 
 {
     BOOL result;
     SC_HANDLE manager = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
-    SC_HANDLE service = OpenServiceA(manager, serviceName, SC_MANAGER_ALL_ACCESS);
+    SC_HANDLE service = OpenServiceA(manager, serviceInfo->name, SC_MANAGER_ALL_ACCESS);
 
     SERVICE_STATUS_PROCESS serviceStatus;
     DWORD bytesNeeded;
@@ -187,7 +212,7 @@ HRESULT SetServiceState(LPCSTR serviceName, DWORD operation)
 
     if (serviceStatus.dwCurrentState != operation)
     {
-        if (ControlService(manager, operation, (LPSERVICE_STATUS)&serviceStatus))
+        if (ControlService(service, operation, (LPSERVICE_STATUS)&serviceStatus))
         {
             cout << "Status changed successully" << endl;
             result = true;
@@ -198,30 +223,36 @@ HRESULT SetServiceState(LPCSTR serviceName, DWORD operation)
             result = false;
         }
     }
+    
+    WaitWhileStatus(serviceInfo, service, operation);
 
     CloseServiceHandle(service);
     CloseServiceHandle(manager);
     return result ? S_OK : S_FALSE;
 }
 
-extern "C" HRESULT StopService(ServiceInfo service)
+extern "C" HRESULT _StopService(ServiceInfo* service)
 {
-    cout << "StartService" << endl;
-    return SetServiceState(service.Name, SERVICE_CONTROL_STOP);
+    cout << "StopService("<< service->name << ")" << endl;
+    return SetServiceState(service, SERVICE_CONTROL_STOP);
 }
 
-HRESULT StartService(LPCSTR serviceName)
+HRESULT StartService(ServiceInfo* serviceInfo)
 {
     SC_HANDLE manager = OpenSCManager(NULL, NULL, SC_MANAGER_ALL_ACCESS);
-    SC_HANDLE service = OpenServiceA(manager, serviceName, SC_MANAGER_ALL_ACCESS);
+    SC_HANDLE service = OpenServiceA(manager, serviceInfo->name, SC_MANAGER_ALL_ACCESS);
     BOOL result = StartServiceA(service, NULL, NULL);
+
+    WaitWhileStatus(serviceInfo, service, SERVICE_RUNNING);
+
     result ? cout << "Service started" : cout << "Something went wrong. Service has not started";
     cout << endl;
     return result ? S_OK : S_FALSE;
 }
 
-extern "C" HRESULT StartService(ServiceInfo service)
+extern "C" HRESULT _StartService(ServiceInfo * service)
 {
-    cout << "StartService" << endl;
-    return StartService(service.Name);
+    cout << "StartService(" << service->name << ")" << endl;
+    HRESULT result = StartService(service);
+    return result;
 }

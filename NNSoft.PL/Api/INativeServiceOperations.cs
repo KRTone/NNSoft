@@ -3,7 +3,7 @@
     public interface INativeServiceOperations
     {
         ErrorCode GetServices(out NativeServiceInfo[] serviceInfo);
-        ErrorCode StopServices(NativeServiceInfo serviceInfo);
-        ErrorCode StartServices(NativeServiceInfo serviceInfo);
+        ErrorCode StopService(NativeServiceInfo serviceInfo);
+        ErrorCode StartService(NativeServiceInfo serviceInfo);
     }
 }

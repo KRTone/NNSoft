@@ -2,19 +2,19 @@
 
 namespace NNSoft.PL.Api
 {
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    public struct NativeServiceInfo
+    [StructLayout(LayoutKind.Sequential)]
+    public class NativeServiceInfo
     {
-        public string Name;
+        public string name;
 
-        public string Description;
+        public string description;
 
-        public string Group;
+        public string group;
 
-        public int Id;
+        public int id;
 
-        public int State;
+        public int state;
 
-        public string Path;
+        public string path;
     }
 }

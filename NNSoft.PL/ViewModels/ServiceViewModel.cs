@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
@@ -15,18 +16,17 @@ namespace NNSoft.PL.ViewModels
         public ServiceViewModel(ServiceManager serviceManager)
         {
             this.serviceManager = serviceManager ?? throw new ArgumentNullException(nameof(serviceManager));
-            services = serviceManager.GetServices();
-
-            Stop = new AsyncCommand<object>((token, param) => serviceManager.StopService(selectedService.Name));
-
-            IsServiceManagerOperationExecuting = true;
+            services = new ObservableCollection<ServiceInfo>(serviceManager.GetServices());
+            StopServiceCommand = new AsyncCommand<object>((token, service) => serviceManager.StopService(service as ServiceInfo));
+            StartServiceCommand = new AsyncCommand<object>((token, service) => serviceManager.StartService(service as ServiceInfo));
+            RestartServiceCommand = new AsyncCommand<object>((token, service) => serviceManager.RestartService(service as ServiceInfo));
         }
 
-        ServiceInfo[] services;
-        public ServiceInfo[] Services
+        ObservableCollection<ServiceInfo> services;
+        public ObservableCollection<ServiceInfo> Services
         {
             get { return services; }
-            set { SetProperty(ref services, value); }
+            private set { SetProperty(ref services, value); }
         }
 
         ServiceInfo selectedService;
@@ -36,8 +36,8 @@ namespace NNSoft.PL.ViewModels
             set { SetProperty(ref selectedService, value); }
         }
 
-        ICommand Stop { get; }
-
-        public bool IsServiceManagerOperationExecuting { get; set; }
+        public ICommand StopServiceCommand { get; }
+        public ICommand StartServiceCommand { get; }
+        public ICommand RestartServiceCommand { get; }
     }
 }

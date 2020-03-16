@@ -9,16 +9,18 @@
       xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
       prism:ViewModelLocator.AutoWireViewModel="True"
       mc:Ignorable="d" >
-  <Grid>
-    <DataGrid ScrollViewer.CanContentScroll="True"
-              ScrollViewer.HorizontalScrollBarVisibility="Auto"
+    <Grid>
+        <DataGrid ScrollViewer.CanContentScroll="True"
+              ScrollViewer.HorizontalScrollBarVisibility="Auto" 
               ScrollViewer.VerticalScrollBarVisibility="Auto"
               IsReadOnly="True"
               SelectionMode="Single"
               AutoGenerateColumns="False"
               x:Name="dataGrid"
-              ItemsSource="{Binding Services}"
-              RowStyle="{DynamicResource serviceOperations}">
+              ItemsSource="{Binding Services, UpdateSourceTrigger=PropertyChanged}"
+              SelectedItem="{Binding SelectedService}"
+              RowStyle="{DynamicResource serviceOperations}"
+              Tag="{Binding DataContext, RelativeSource={RelativeSource Mode=Self}}">
       <DataGrid.Columns>
         <DataGridTextColumn
                     Header="Имя"
