@@ -7,8 +7,14 @@
 #include <comdef.h>
 #include <thread>
 #include <stdlib.h>
+#include "NullPtrException.h"
 using namespace std;
 
+void ThrowIfNullPointer(void* pointer)
+{
+    if (pointer == nullptr)
+        throw NullPointerException("Null pointer");
+}
 
 HRESULT LoadServiceInfo(LPSTR serviceName, LPSTR* servicePath, LPSTR* serviceGroup)
 {
@@ -50,52 +56,7 @@ HRESULT LoadServiceInfo(LPSTR serviceName, LPSTR* servicePath, LPSTR* serviceGro
     return S_OK;
 }
 
-int _GetServiceCount() 
-{
-    SC_HANDLE manager = OpenSCManagerA(NULL, NULL, SC_MANAGER_ALL_ACCESS);
-
-    if (manager == INVALID_HANDLE_VALUE)
-    {
-        return S_FALSE;
-    }
-
-    DWORD bytesNeeded;
-    DWORD servicesCount;
-
-    BOOL status = EnumServicesStatusExA(
-        manager,
-        SC_ENUM_PROCESS_INFO,
-        SERVICE_WIN32,
-        SERVICE_STATE_ALL,
-        NULL,
-        0,
-        &bytesNeeded,
-        &servicesCount,
-        NULL,
-        NULL
-    );
-
-    PBYTE lpBytes = (PBYTE)malloc(bytesNeeded * sizeof lpBytes);
-
-    status = EnumServicesStatusExA(
-        manager,
-        SC_ENUM_PROCESS_INFO,
-        SERVICE_WIN32,
-        SERVICE_STATE_ALL,
-        lpBytes,
-        bytesNeeded,
-        &bytesNeeded,
-        &servicesCount,
-        NULL,
-        NULL
-    );
-
-    free(lpBytes);
-    CloseServiceHandle(manager);
-    return servicesCount;
-}
-
-HRESULT EnumerateServices(ServiceInfo* services)
+HRESULT EnumerateServices(ServiceInfo** services, LPDWORD count)
 {
     SC_HANDLE manager = OpenSCManagerA(NULL, NULL, SC_MANAGER_ALL_ACCESS);
 
@@ -141,6 +102,7 @@ HRESULT EnumerateServices(ServiceInfo* services)
     }
 
     LPENUM_SERVICE_STATUS_PROCESS lpServiceStatus = (LPENUM_SERVICE_STATUS_PROCESS)lpServiceBytes;
+    *services = (ServiceInfo*)malloc(servicesCount * sizeof(ServiceInfo));
 
     cout << "Services loaded" << endl;
 
@@ -150,14 +112,12 @@ HRESULT EnumerateServices(ServiceInfo* services)
 
         HRESULT result = LoadServiceInfo(lpServiceStatus[i].lpServiceName, &Path, &groupName);
 
-        ServiceInfo service;
-        service.description = _strdup(lpServiceStatus[i].lpDisplayName);
-        service.group = groupName;
-        service.id = lpServiceStatus[i].ServiceStatusProcess.dwProcessId;
-        service.name = _strdup(lpServiceStatus[i].lpServiceName);
-        service.path = Path;
-        service.state = lpServiceStatus[i].ServiceStatusProcess.dwCurrentState;
-        services[i] = service;
+        (*services)[i].description = _strdup(lpServiceStatus[i].lpDisplayName);
+        (*services)[i].group = groupName;
+        (*services)[i].id = lpServiceStatus[i].ServiceStatusProcess.dwProcessId;
+        (*services)[i].name = _strdup(lpServiceStatus[i].lpServiceName);
+        (*services)[i].path = Path;
+        (*services)[i].state = lpServiceStatus[i].ServiceStatusProcess.dwCurrentState;
 
         if (result == S_FALSE)
             return S_FALSE;
@@ -167,13 +127,15 @@ HRESULT EnumerateServices(ServiceInfo* services)
 
     free(lpServiceBytes);
     CloseServiceHandle(manager);
+    *count = servicesCount;
     return S_OK;
 }
 
-extern "C" HRESULT _GetServices(ServiceInfo* services)
+extern "C" HRESULT _GetServices(ServiceInfo** services, LPDWORD servicesCount)
 {
+    ThrowIfNullPointer(services);
     cout << "Start Enumerate Services" << endl;
-    HRESULT result = EnumerateServices(services);
+    HRESULT result = EnumerateServices(services, servicesCount);
     cout << "End Enumerate Services" << endl;
     cout << "Exit From calling method" << endl;
     return result;
@@ -233,6 +195,7 @@ HRESULT SetServiceState(ServiceInfo* serviceInfo, DWORD operation)
 
 extern "C" HRESULT _StopService(ServiceInfo* service)
 {
+    ThrowIfNullPointer(service);
     cout << "StopService("<< service->name << ")" << endl;
     return SetServiceState(service, SERVICE_CONTROL_STOP);
 }
@@ -245,6 +208,9 @@ HRESULT StartService(ServiceInfo* serviceInfo)
 
     WaitWhileStatus(serviceInfo, service, SERVICE_RUNNING);
 
+    CloseServiceHandle(service);
+    CloseServiceHandle(manager);
+
     result ? cout << "Service started" : cout << "Something went wrong. Service has not started";
     cout << endl;
     return result ? S_OK : S_FALSE;
@@ -252,6 +218,7 @@ HRESULT StartService(ServiceInfo* serviceInfo)
 
 extern "C" HRESULT _StartService(ServiceInfo * service)
 {
+    ThrowIfNullPointer(service);
     cout << "StartService(" << service->name << ")" << endl;
     HRESULT result = StartService(service);
     return result;

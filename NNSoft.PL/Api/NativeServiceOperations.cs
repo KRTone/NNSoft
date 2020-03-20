@@ -12,11 +12,7 @@ namespace NNSoft.PL.Api
 #endif
 
         [DllImport(assemblyLocation, EntryPoint = "_GetServices", CallingConvention = CallingConvention.Cdecl)]
-        static extern int _GetServices(
-            [In, Out, MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(ArrayMarshaler<NativeServiceInfo>), IidParameterIndex = 0)] NativeServiceInfo[] serviceInfo);
-
-        [DllImport(assemblyLocation, EntryPoint = "_GetServiceCount", CallingConvention = CallingConvention.Cdecl)]
-        static extern int _GetServiceCount();
+        static extern int _GetServices(out IntPtr serviceInfo, out uint count);
 
         [DllImport(assemblyLocation, EntryPoint = "_StartService", CallingConvention = CallingConvention.Cdecl)]
         static extern int _StartService([In, Out] NativeServiceInfo serviceInfo);
@@ -26,18 +22,31 @@ namespace NNSoft.PL.Api
 
         public ErrorCode GetServices(out NativeServiceInfo[] serviceInfoes)
         {
-            int count = _GetServiceCount();
-            serviceInfoes = new NativeServiceInfo[count];
-            for (int i = 0; i < serviceInfoes.Length; i++)
-            {
-                if (serviceInfoes[i] is null)
-                    serviceInfoes[i] = new NativeServiceInfo();
-            }
-            return (ErrorCode)_GetServices(serviceInfoes);
+            var resultCode = _GetServices(out IntPtr ptr, out uint count);
+            serviceInfoes = GetManagedArray<NativeServiceInfo>(ptr, count);
+            return (ErrorCode)resultCode;
         }
 
         public ErrorCode StartService(NativeServiceInfo serviceInfo) => (ErrorCode)_StartService(serviceInfo);
 
         public ErrorCode StopService(NativeServiceInfo serviceInfo) => (ErrorCode)_StopServices(serviceInfo);
+
+        private T[] GetManagedArray<T>(IntPtr pNativeData, uint count)
+        {
+            T[] result = new T[count];
+
+            if (IntPtr.Zero == pNativeData)
+            {
+                return null;
+            }
+
+            int elSiz = Marshal.SizeOf<T>();
+            for (int i = 0; i < count; i++)
+            {
+                result[i] = Marshal.PtrToStructure<T>(pNativeData + (elSiz * i));
+            }
+
+            return result;
+        }
     }
 }

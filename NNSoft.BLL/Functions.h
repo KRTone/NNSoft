@@ -16,7 +16,6 @@ typedef struct _ServiceInfo
     char* path;
 } ServiceInfo, *LPServiceInfo;
 
-extern "C" __declspec(dllexport) HRESULT _GetServices(ServiceInfo* services);
+extern "C" __declspec(dllexport) HRESULT _GetServices(ServiceInfo** services, LPDWORD servicesCount);
 extern "C" __declspec(dllexport) HRESULT _StopService(ServiceInfo* service);
-extern "C" __declspec(dllexport) int _GetServiceCount();
 extern "C" __declspec(dllexport) HRESULT _StartService(ServiceInfo* service);
